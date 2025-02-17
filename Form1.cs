@@ -33,6 +33,7 @@ namespace ExploradorWeb
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            int a = 0;
             comboBox1.Items.Clear();
 
             string archivo1 = @"../..Historial.txt";
@@ -40,9 +41,10 @@ namespace ExploradorWeb
             FileStream stream1 = new FileStream(archivo1, FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(stream1);
 
-            while (reader.Peek() > -1)
+            while (reader.Peek() > -1 && a<=9)
             {
                 comboBox1.Items.Add(reader.ReadLine());
+                a++;
             }
 
             reader.Close();
@@ -110,6 +112,7 @@ namespace ExploradorWeb
 
         private void Historial_Click(object sender, EventArgs e)
         {
+            int a = 0;
             comboBox1.Items.Clear();
 
             string archivo1 = @"../..Historial.txt";
@@ -117,9 +120,10 @@ namespace ExploradorWeb
             FileStream stream1 = new FileStream(archivo1, FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(stream1);
 
-            while (reader.Peek() > -1)
+            while (reader.Peek() > -1 && a<=9)
             {
                 comboBox1.Items.Add(reader.ReadLine());
+                a++;
             }
 
             reader.Close();
