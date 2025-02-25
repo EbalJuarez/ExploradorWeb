@@ -16,12 +16,52 @@ namespace ExploradorWeb
 {
     public partial class Explorador : Form
     {
+        public static string url;
+        public static int cont;
+        public static DateTime fec;
+        URL urls = new URL(url, cont, fec);
+        Dictionary<string, (int contador, DateTime fecha)> historial = new Dictionary<string, (int, DateTime)>();
         public Explorador()
         {
             InitializeComponent();
             this.Resize += new System.EventHandler(this.Form_Resize);
             //string path = @"../..Historial.txt";
             //File.WriteAllText(path, string.Empty);
+        }
+
+        private void CargarHistorial()
+        {
+            comboBox1.Items.Clear();
+            string archivo1 = @"../..Historial.txt";
+            if (File.Exists(archivo1))
+            {
+                using (StreamReader reader = new StreamReader(archivo1))
+                {
+                    while (reader.Peek() > -1)
+                    {
+                        string url = reader.ReadLine();
+                        if (!historial.ContainsKey(url))
+                        {
+                            historial[url] = (1, DateTime.Now); 
+                        }
+                        else
+                        {
+                            historial[url] = (historial[url].contador + 1, DateTime.Now); 
+                        }
+                    }
+                }
+            }
+
+            ActualizarComboBox();
+        }
+
+        private void ActualizarComboBox()
+        {
+            comboBox1.Items.Clear();
+            foreach (var entry in historial.OrderByDescending(x => x.Value.contador)) 
+            {
+                comboBox1.Items.Add(entry.Key);
+            }
         }
 
         private void Form_Resize(object sender, EventArgs e)
@@ -33,54 +73,70 @@ namespace ExploradorWeb
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            int a = 0;
-            comboBox1.Items.Clear();
-
-            string archivo1 = @"../..Historial.txt";
-
-            FileStream stream1 = new FileStream(archivo1, FileMode.Open, FileAccess.Read);
-            StreamReader reader = new StreamReader(stream1);
-
-            while (reader.Peek() > -1 && a<=9)
-            {
-                comboBox1.Items.Add(reader.ReadLine());
-                a++;
-            }
-
-            reader.Close();
+            CargarHistorial();
 
 
         }
 
+        private void GuardarHistorial()
+        {
+            string archivo = @"../..Historial.txt";
+            using (StreamWriter writer = new StreamWriter(archivo, false))
+            {
+                foreach (var entry in historial.OrderByDescending(x => x.Value.fecha)) 
+                {
+                    writer.WriteLine(entry.Key);
+                }
+            }
+        }
+
+        private void Historial_Click(object sender, EventArgs e)
+        {
+            if (comboBox2.SelectedItem != null)
+            {
+                comboBox1.Items.Clear();
+                if (comboBox2.SelectedItem.ToString() == "Por fecha")
+                {
+                    var historialPorFecha = historial.OrderByDescending(x => x.Value.fecha).ToList();
+                    foreach (var entry in historialPorFecha)
+                    {
+                        comboBox1.Items.Add(entry.Key);
+                    }
+                }
+                else if (comboBox2.SelectedItem.ToString() == "Por visitas")
+                {
+                    var historialPorVisitas = historial.OrderByDescending(x => x.Value.contador).ToList();
+                    foreach (var entry in historialPorVisitas)
+                    {
+                        comboBox1.Items.Add(entry.Key);
+                    }
+                }
+            }
+        }
         private void BotonIr_Click(object sender, EventArgs e)
         {
-            
+            string urlVisitada = comboBox1.Text;
+            if (!historial.ContainsKey(urlVisitada))
+            {
+                historial[urlVisitada] = (1, DateTime.Now); 
+            }
+            else
+            {
+                historial[urlVisitada] = (historial[urlVisitada].contador + 1, DateTime.Now); 
+            }
 
-            string archivo = @"../..Historial.txt";
-            FileStream stream = new FileStream(archivo, FileMode.Append, FileAccess.Write);
-            StreamWriter writer = new StreamWriter(stream);
-            writer.WriteLine(comboBox1.Text);
-
-            writer.Close();
-
-            
-
+           
+            GuardarHistorial();
 
             if (webView != null && webView.CoreWebView2 != null)
             {
-                if (comboBox1.Text.Contains("https://") && comboBox1.Text.Contains(".com") || comboBox1.Text.Contains(".com/")) {
-                    webView.CoreWebView2.Navigate(comboBox1.Text);
-                }
-                if (comboBox1.Text.Contains(".com/") || comboBox1.Text.Contains(".com"))
+                if (urlVisitada.Contains("https://") && (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
                 {
-                    webView.CoreWebView2.Navigate("https://" + comboBox1.Text);
+                    webView.CoreWebView2.Navigate(urlVisitada);
                 }
-                if (comboBox1.Text.Contains("https://"))
+                else
                 {
-                    webView.CoreWebView2.Navigate(comboBox1.Text);
-                }
-                else {
-                    webView.CoreWebView2.Navigate(" https://www.google.com/search?q=" + comboBox1.Text);
+                    webView.CoreWebView2.Navigate("https://www.google.com/search?q=" + urlVisitada);
                 }
             }
         }
@@ -110,24 +166,24 @@ namespace ExploradorWeb
 
         }
 
-        private void Historial_Click(object sender, EventArgs e)
+        
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int a = 0;
-            comboBox1.Items.Clear();
 
-            string archivo1 = @"../..Historial.txt";
+        }
 
-            FileStream stream1 = new FileStream(archivo1, FileMode.Open, FileAccess.Read);
-            StreamReader reader = new StreamReader(stream1);
-
-            while (reader.Peek() > -1 && a<=9)
+        private void Borrar_Click(object sender, EventArgs e)
+        {
+            string urlBorrar = comboBox1.Text;
+            if (historial.ContainsKey(urlBorrar))
             {
-                comboBox1.Items.Add(reader.ReadLine());
-                a++;
+                historial.Remove(urlBorrar); 
+                GuardarHistorial(); 
+                ActualizarComboBox();
+
             }
 
-            reader.Close();
-            
         }
     }
 }

@@ -38,6 +38,8 @@
             this.webView = new Microsoft.Web.WebView2.WinForms.WebView2();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.Historial = new System.Windows.Forms.Button();
+            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.Borrar = new System.Windows.Forms.Button();
             this.menuStrip2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.webView)).BeginInit();
             this.SuspendLayout();
@@ -106,10 +108,10 @@
             this.webView.AllowExternalDrop = true;
             this.webView.CreationProperties = null;
             this.webView.DefaultBackgroundColor = System.Drawing.Color.White;
-            this.webView.Location = new System.Drawing.Point(12, 99);
+            this.webView.Location = new System.Drawing.Point(12, 125);
             this.webView.Name = "webView";
-            this.webView.Size = new System.Drawing.Size(870, 478);
-            this.webView.Source = new System.Uri("https://github.com/", System.UriKind.Absolute);
+            this.webView.Size = new System.Drawing.Size(870, 452);
+            this.webView.Source = new System.Uri("https://www.google.com/", System.UriKind.Absolute);
             this.webView.TabIndex = 5;
             this.webView.ZoomFactor = 1D;
             this.webView.Click += new System.EventHandler(this.webView_Click);
@@ -124,7 +126,7 @@
             // 
             // Historial
             // 
-            this.Historial.Location = new System.Drawing.Point(807, 12);
+            this.Historial.Location = new System.Drawing.Point(807, 28);
             this.Historial.Name = "Historial";
             this.Historial.Size = new System.Drawing.Size(75, 23);
             this.Historial.TabIndex = 7;
@@ -132,11 +134,37 @@
             this.Historial.UseVisualStyleBackColor = true;
             this.Historial.Click += new System.EventHandler(this.Historial_Click);
             // 
+            // comboBox2
+            // 
+            this.comboBox2.FormattingEnabled = true;
+            this.comboBox2.Items.AddRange(new object[] {
+            "Por fecha",
+            "Por visitas"});
+            this.comboBox2.Location = new System.Drawing.Point(680, 28);
+            this.comboBox2.Name = "comboBox2";
+            this.comboBox2.Size = new System.Drawing.Size(121, 21);
+            this.comboBox2.TabIndex = 8;
+            this.comboBox2.Tag = "";
+            this.comboBox2.Text = "Ordenar por:";
+            this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
+            // 
+            // Borrar
+            // 
+            this.Borrar.Location = new System.Drawing.Point(807, 82);
+            this.Borrar.Name = "Borrar";
+            this.Borrar.Size = new System.Drawing.Size(75, 23);
+            this.Borrar.TabIndex = 9;
+            this.Borrar.Text = "Borrar";
+            this.Borrar.UseVisualStyleBackColor = true;
+            this.Borrar.Click += new System.EventHandler(this.Borrar_Click);
+            // 
             // Explorador
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(904, 615);
+            this.Controls.Add(this.Borrar);
+            this.Controls.Add(this.comboBox2);
             this.Controls.Add(this.Historial);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.webView);
@@ -167,6 +195,8 @@
         private Microsoft.Web.WebView2.WinForms.WebView2 webView;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button Historial;
+        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Button Borrar;
     }
 }
 
