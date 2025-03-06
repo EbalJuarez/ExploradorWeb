@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -19,8 +20,8 @@ namespace ExploradorWeb
         public static string url;
         public static int cont;
         public static DateTime fec;
-        URL urls = new URL(url, cont, fec);
-        Dictionary<string, (int contador, DateTime fecha)> historial = new Dictionary<string, (int, DateTime)>();
+        //URL urls = new URL(url, cont, fec);
+        List<URL> histo = new List<URL> ();
         public Explorador()
         {
             InitializeComponent();
@@ -31,26 +32,18 @@ namespace ExploradorWeb
 
         private void CargarHistorial()
         {
-            comboBox1.Items.Clear();
-            string archivo1 = @"../..Historial.txt";
-            if (File.Exists(archivo1))
+            string filename = @"../..Historial.txt";
+            FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Read);
+            StreamReader reader = new StreamReader(stream);
+            while (reader.Peek() > -1)
             {
-                using (StreamReader reader = new StreamReader(archivo1))
-                {
-                    while (reader.Peek() > -1)
-                    {
-                        string url = reader.ReadLine();
-                        if (!historial.ContainsKey(url))
-                        {
-                            historial[url] = (1, DateTime.Now); 
-                        }
-                        else
-                        {
-                            historial[url] = (historial[url].contador + 1, DateTime.Now); 
-                        }
-                    }
-                }
+                URL url = new URL();
+                url.url = reader.ReadLine();
+                url.contador = int.Parse(reader.ReadLine());
+                url.fecha = Convert.ToDateTime(reader.ReadLine());
+
             }
+            reader.Close();
 
             ActualizarComboBox();
         }
@@ -58,9 +51,9 @@ namespace ExploradorWeb
         private void ActualizarComboBox()
         {
             comboBox1.Items.Clear();
-            foreach (var entry in historial.OrderByDescending(x => x.Value.contador)) 
+            foreach (var urls in histo) 
             {
-                comboBox1.Items.Add(entry.Key);
+                comboBox1.Items.Add(histo);
             }
         }
 
@@ -80,14 +73,16 @@ namespace ExploradorWeb
 
         private void GuardarHistorial()
         {
-            string archivo = @"../..Historial.txt";
-            using (StreamWriter writer = new StreamWriter(archivo, false))
+            string filename = @"../..Historial.txt";
+            FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter writer = new StreamWriter(stream);
+            foreach (URL urls in histo)
             {
-                foreach (var entry in historial.OrderByDescending(x => x.Value.fecha)) 
-                {
-                    writer.WriteLine(entry.Key);
-                }
+                writer.WriteLine(urls.url);
+                writer.WriteLine(urls.contador);
+                writer.WriteLine(urls.fecha);
             }
+            writer.Close();
         }
 
         private void Historial_Click(object sender, EventArgs e)
@@ -97,49 +92,70 @@ namespace ExploradorWeb
                 comboBox1.Items.Clear();
                 if (comboBox2.SelectedItem.ToString() == "Por fecha")
                 {
-                    var historialPorFecha = historial.OrderByDescending(x => x.Value.fecha).ToList();
-                    foreach (var entry in historialPorFecha)
+                    histo = histo.OrderBy(a =>a.fecha < DateTime.Now).ToList();
+                    foreach (URL urls in histo)
                     {
-                        comboBox1.Items.Add(entry.Key);
+                        comboBox1.Items.Add(urls);
                     }
                 }
                 else if (comboBox2.SelectedItem.ToString() == "Por visitas")
                 {
-                    var historialPorVisitas = historial.OrderByDescending(x => x.Value.contador).ToList();
-                    foreach (var entry in historialPorVisitas)
+                    var historialPorVisitas = histo.OrderByDescending(x => x.contador ).ToList();
+                    foreach (URL urls in histo)
                     {
-                        comboBox1.Items.Add(entry.Key);
+                        comboBox1.Items.Add(urls);
                     }
                 }
             }
         }
+
+        //Boton de ir, 
         private void BotonIr_Click(object sender, EventArgs e)
+
         {
+            URL urls = new URL();
             string urlVisitada = comboBox1.Text;
-            if (!historial.ContainsKey(urlVisitada))
-            {
-                historial[urlVisitada] = (1, DateTime.Now); 
-            }
-            else
-            {
-                historial[urlVisitada] = (historial[urlVisitada].contador + 1, DateTime.Now); 
-            }
-
-           
-            GuardarHistorial();
-
+            
+            //GuardarHistorial();
             if (webView != null && webView.CoreWebView2 != null)
             {
                 if (urlVisitada.Contains("https://") && (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
                 {
+                    urls.url = urlVisitada;
+                    foreach (var url in histo)
+                    {
+                        if (urls.url.Equals(urlVisitada))
+                        {
+                            urls.contador++;
+                        }
+                        else
+                        {
+                            histo.Add(urls);
+                        }
+                    }
                     webView.CoreWebView2.Navigate(urlVisitada);
                 }
                 else
                 {
-                    webView.CoreWebView2.Navigate("https://www.google.com/search?q=" + urlVisitada);
+                    urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
+                    urls.url = urlVisitada;
+                    foreach (var url in histo)
+                    {
+                        if (urls.url.Equals(urlVisitada))
+                        {
+                            urls.contador++;
+                        }
+                        else
+                        {
+                            histo.Add(urls);
+                        }
+                    }
+                    webView.CoreWebView2.Navigate(urlVisitada);
+
                 }
             }
         }
+
 
         private void inicioToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -176,13 +192,7 @@ namespace ExploradorWeb
         private void Borrar_Click(object sender, EventArgs e)
         {
             string urlBorrar = comboBox1.Text;
-            if (historial.ContainsKey(urlBorrar))
-            {
-                historial.Remove(urlBorrar); 
-                GuardarHistorial(); 
-                ActualizarComboBox();
-
-            }
+            histo.RemoveAll(l => l.url == urlBorrar);
 
         }
     }

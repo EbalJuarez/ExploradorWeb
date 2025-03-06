@@ -12,11 +12,6 @@ namespace ExploradorWeb
         public int contador { get; set; }
         public DateTime fecha { get; set; }
 
-        public URL(string url, int contador, DateTime fecha)
-        {
-            this.url = url;
-            this.contador = contador;
-            this.fecha = fecha;
-        }
+      
     }
 }
