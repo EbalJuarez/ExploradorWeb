@@ -51,6 +51,7 @@ namespace ExploradorWeb
 
         private void ActualizarComboBox()
         {
+            LeerJson("../../Historial.json");
             comboBox1.Items.Clear();
             foreach (var urls in histo) 
             {
@@ -132,6 +133,9 @@ namespace ExploradorWeb
         {
             URL urls = new URL();
             string urlVisitada = comboBox1.Text;
+            Url urlExiste = new Url();
+
+            //if(histo != null)
 
             
                 if (webView != null && webView.CoreWebView2 != null)
@@ -172,7 +176,6 @@ namespace ExploradorWeb
                     }
                     GuardarJson("../../Historial.json");
                 }
-            
         }
 
 
