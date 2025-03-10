@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
+using Newtonsoft.Json;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolBar;
 
@@ -32,7 +33,7 @@ namespace ExploradorWeb
 
         private void CargarHistorial()
         {
-            string filename = @"../..Historial.txt";
+            string filename = @"../..Historial.json";
             FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Read);
             StreamReader reader = new StreamReader(stream);
             while (reader.Peek() > -1)
@@ -66,14 +67,13 @@ namespace ExploradorWeb
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            CargarHistorial();
-
-
+            GuardarJson("../../Historial.json");
+            LeerJson("../../Historial.json");
         }
 
         private void GuardarHistorial()
         {
-            string filename = @"../..Historial.txt";
+            string filename = @"../../Historial.json";
             FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
             StreamWriter writer = new StreamWriter(stream);
             foreach (URL urls in histo)
@@ -83,6 +83,23 @@ namespace ExploradorWeb
                 writer.WriteLine(urls.fecha);
             }
             writer.Close();
+        }
+
+        private void GuardarJson(String filename)
+        {
+            string json = JsonConvert.SerializeObject(histo);
+            //string archivo = filename;
+
+            System.IO.File.WriteAllText(filename, json);
+        }
+
+        private void LeerJson(string filename)
+        {
+            StreamReader jsonStream = File.OpenText(filename);
+            string json = jsonStream.ReadToEnd();
+            jsonStream.Close();
+
+            histo = JsonConvert.DeserializeObject<List<URL>>(json);
         }
 
         private void Historial_Click(object sender, EventArgs e)
@@ -115,45 +132,47 @@ namespace ExploradorWeb
         {
             URL urls = new URL();
             string urlVisitada = comboBox1.Text;
-            
-            //GuardarHistorial();
-            if (webView != null && webView.CoreWebView2 != null)
-            {
-                if (urlVisitada.Contains("https://") && (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
-                {
-                    urls.url = urlVisitada;
-                    foreach (var url in histo)
-                    {
-                        if (urls.url.Equals(urlVisitada))
-                        {
-                            urls.contador++;
-                        }
-                        else
-                        {
-                            histo.Add(urls);
-                        }
-                    }
-                    webView.CoreWebView2.Navigate(urlVisitada);
-                }
-                else
-                {
-                    urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
-                    urls.url = urlVisitada;
-                    foreach (var url in histo)
-                    {
-                        if (urls.url.Equals(urlVisitada))
-                        {
-                            urls.contador++;
-                        }
-                        else
-                        {
-                            histo.Add(urls);
-                        }
-                    }
-                    webView.CoreWebView2.Navigate(urlVisitada);
 
+            
+                if (webView != null && webView.CoreWebView2 != null)
+                {
+                    if (urlVisitada.Contains("https://") && (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
+                    {
+                        urls.url = urlVisitada;
+                        foreach (var url in histo)
+                        {
+                            if (urls.url.Equals(urlVisitada))
+                            {
+                                urls.contador++;
+                            }
+                            else
+                            {
+                                histo.Add(urls);
+                            }
+                        }
+                        webView.CoreWebView2.Navigate(urlVisitada);
+                    }
+                    else
+                    {
+                        urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
+                        urls.url = urlVisitada;
+                        foreach (var url in histo)
+                        {
+                            if (urls.url.Equals(urlVisitada))
+                            {
+                                urls.contador++;
+                            }
+                            else
+                            {
+                                histo.Add(urls);
+                            }
+                        }
+                        webView.CoreWebView2.Navigate(urlVisitada);
+
+                    }
+                    GuardarJson("../../Historial.json");
                 }
-            }
+            
         }
 
 
