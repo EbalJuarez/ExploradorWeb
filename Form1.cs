@@ -18,10 +18,7 @@ namespace ExploradorWeb
 {
     public partial class Explorador : Form
     {
-        public static string url;
-        public static int cont;
-        public static DateTime fec;
-        //URL urls = new URL(url, cont, fec);
+       
         List<URL> histo = new List<URL> ();
         public Explorador()
         {
@@ -33,7 +30,7 @@ namespace ExploradorWeb
 
         private void CargarHistorial()
         {
-            string filename = @"../..Historial.json";
+            string filename = @"../Historial.txt";
             FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Read);
             StreamReader reader = new StreamReader(stream);
             while (reader.Peek() > -1)
@@ -51,11 +48,11 @@ namespace ExploradorWeb
 
         private void ActualizarComboBox()
         {
-            LeerJson("../../Historial.json");
+            //LeerJson("../../Historial.json");
             comboBox1.Items.Clear();
-            foreach (var urls in histo) 
+            foreach (URL url in histo) 
             {
-                comboBox1.Items.Add(histo);
+                comboBox1.Items.Add(url.url);
             }
         }
 
@@ -67,14 +64,15 @@ namespace ExploradorWeb
         }
 
         private void Form1_Load(object sender, EventArgs e)
-        {
+        { /*
             GuardarJson("../../Historial.json");
-            LeerJson("../../Historial.json");
+            LeerJson("../../Historial.json"); */
+            CargarHistorial();
         }
 
         private void GuardarHistorial()
         {
-            string filename = @"../../Historial.json";
+            string filename = @"../Historial.txt";
             FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
             StreamWriter writer = new StreamWriter(stream);
             foreach (URL urls in histo)
@@ -133,48 +131,56 @@ namespace ExploradorWeb
         {
             URL urls = new URL();
             string urlVisitada = comboBox1.Text;
-            Url urlExiste = new Url();
-
-            //if(histo != null)
-
             
                 if (webView != null && webView.CoreWebView2 != null)
                 {
-                    if (urlVisitada.Contains("https://") && (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
+                    if (urlVisitada.Contains("https://") || (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
                     {
-                        urls.url = urlVisitada;
-                        foreach (var url in histo)
+                        foreach(URL urlx in histo)
                         {
-                            if (urls.url.Equals(urlVisitada))
-                            {
-                                urls.contador++;
+                            if (urlx.url.Equals(urlVisitada)) {
+                                urlx.contador++;
                             }
-                            else
-                            {
+                            else{
+                                urls.url = urlVisitada;
+                                urls.contador = 1;
+                                urls.fecha = DateTime.Now;
                                 histo.Add(urls);
                             }
                         }
+                        
+                        GuardarHistorial();
+                        ActualizarComboBox();
                         webView.CoreWebView2.Navigate(urlVisitada);
                     }
                     else
                     {
+
                         urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
-                        urls.url = urlVisitada;
-                        foreach (var url in histo)
+                        foreach (URL urlx in histo)
                         {
-                            if (urls.url.Equals(urlVisitada))
+                            if (urlx.url.Equals(urlVisitada))
                             {
-                                urls.contador++;
+
                             }
-                            else
-                            {
-                                histo.Add(urls);
-                            }
+                        else
+                        {
+                            urls.url = urlVisitada;
+                            urls.contador = 1;
+                            urls.fecha = DateTime.Now;
+                            histo.Add(urls);
                         }
+                    }
+                    
+                        urls.contador = 1;
+                        urls.fecha = DateTime.Now;
+                        histo.Add(urls);
+                        GuardarHistorial();
+                        ActualizarComboBox();
                         webView.CoreWebView2.Navigate(urlVisitada);
 
                     }
-                    GuardarJson("../../Historial.json");
+                    
                 }
         }
 
