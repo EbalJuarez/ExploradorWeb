@@ -172,9 +172,6 @@ namespace ExploradorWeb
                         }
                     }
                     
-                        urls.contador = 1;
-                        urls.fecha = DateTime.Now;
-                        histo.Add(urls);
                         GuardarHistorial();
                         ActualizarComboBox();
                         webView.CoreWebView2.Navigate(urlVisitada);
