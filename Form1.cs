@@ -39,16 +39,16 @@ namespace ExploradorWeb
                 url.url = reader.ReadLine();
                 url.contador = int.Parse(reader.ReadLine());
                 url.fecha = Convert.ToDateTime(reader.ReadLine());
-
+                histo.Add(url);
             }
             reader.Close();
 
-            ActualizarComboBox();
+
         }
 
         private void ActualizarComboBox()
         {
-            //LeerJson("../../Historial.json");
+            LeerJson("../../Historial.json");
             comboBox1.Items.Clear();
             foreach (URL url in histo) 
             {
@@ -64,10 +64,8 @@ namespace ExploradorWeb
         }
 
         private void Form1_Load(object sender, EventArgs e)
-        { /*
-            GuardarJson("../../Historial.json");
-            LeerJson("../../Historial.json"); */
-            CargarHistorial();
+        { 
+            ActualizarComboBox();
         }
 
         private void GuardarHistorial()
@@ -103,24 +101,19 @@ namespace ExploradorWeb
 
         private void Historial_Click(object sender, EventArgs e)
         {
+            
             if (comboBox2.SelectedItem != null)
             {
                 comboBox1.Items.Clear();
                 if (comboBox2.SelectedItem.ToString() == "Por fecha")
                 {
-                    histo = histo.OrderBy(a =>a.fecha < DateTime.Now).ToList();
-                    foreach (URL urls in histo)
-                    {
-                        comboBox1.Items.Add(urls);
-                    }
+                    histo = histo.OrderByDescending(a =>a.fecha).ToList();
+                    ActualizarComboBox();
                 }
                 else if (comboBox2.SelectedItem.ToString() == "Por visitas")
                 {
-                    var historialPorVisitas = histo.OrderByDescending(x => x.contador ).ToList();
-                    foreach (URL urls in histo)
-                    {
-                        comboBox1.Items.Add(urls);
-                    }
+                    histo = histo.OrderByDescending(x => x.contador ).ToList();
+                    ActualizarComboBox();
                 }
             }
         }
@@ -130,56 +123,57 @@ namespace ExploradorWeb
 
         {
             URL urls = new URL();
-            string urlVisitada = comboBox1.Text;
-            
-                if (webView != null && webView.CoreWebView2 != null)
+            string urlVisitada = comboBox1.Text.ToLower().Trim();
+           
+            if (webView != null && webView.CoreWebView2 != null)
                 {
+                    URL Urlexistente = histo.Find(url => url.url == urlVisitada);
                     if (urlVisitada.Contains("https://") || (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
-                    {
-                        foreach(URL urlx in histo)
                         {
-                            if (urlx.url.Equals(urlVisitada)) {
-                                urlx.contador++;
-                            }
-                            else{
-                                urls.url = urlVisitada;
-                                urls.contador = 1;
-                                urls.fecha = DateTime.Now;
-                                histo.Add(urls);
-                            }
+
+                        if (Urlexistente != null && histo.Any(url => url.url.ToLower() == urlVisitada))
+                        {
+                            Urlexistente.contador++;
+                            
                         }
-                        
-                        GuardarHistorial();
-                        ActualizarComboBox();
-                        webView.CoreWebView2.Navigate(urlVisitada);
-                    }
-                    else
-                    {
-
-                        urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
-                        foreach (URL urlx in histo)
-                        {
-                            if (urlx.url.Equals(urlVisitada))
-                            {
-
-                            }
                         else
                         {
                             urls.url = urlVisitada;
                             urls.contador = 1;
                             urls.fecha = DateTime.Now;
                             histo.Add(urls);
+
+                        }
+          
+                    }
+                    else
+                    {
+
+                        urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
+
+                        if (Urlexistente != null)
+                        {
+                            Urlexistente.contador++;
+                            
+                        }
+                        else
+                        {
+                            urls.url = urlVisitada;
+                            urls.contador = 1;
+                            urls.fecha = DateTime.Now;
+                            histo.Add(urls);
+
                         }
                     }
-                    
-                        GuardarHistorial();
-                        ActualizarComboBox();
-                        webView.CoreWebView2.Navigate(urlVisitada);
+                    comboBox1.Text = "";
+                    GuardarJson("../../Historial.json");
+                    ActualizarComboBox();
+                    webView.CoreWebView2.Navigate(urlVisitada);
 
-                    }
+            }
                     
-                }
         }
+        
 
 
         private void inicioToolStripMenuItem_Click(object sender, EventArgs e)
@@ -218,7 +212,10 @@ namespace ExploradorWeb
         {
             string urlBorrar = comboBox1.Text;
             histo.RemoveAll(l => l.url == urlBorrar);
-
+            comboBox1.Text = "";
+            GuardarJson("../../Historial.json");
+            ActualizarComboBox();
+            comboBox1.Focus();
         }
     }
 }
