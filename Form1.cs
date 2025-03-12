@@ -85,8 +85,6 @@ namespace ExploradorWeb
         private void GuardarJson(String filename)
         {
             string json = JsonConvert.SerializeObject(histo);
-            //string archivo = filename;
-
             System.IO.File.WriteAllText(filename, json);
         }
 
@@ -107,13 +105,19 @@ namespace ExploradorWeb
                 comboBox1.Items.Clear();
                 if (comboBox2.SelectedItem.ToString() == "Por fecha")
                 {
-                    histo = histo.OrderByDescending(a =>a.fecha).ToList();
-                    ActualizarComboBox();
+                    histo = histo.OrderByDescending(a => a.fecha).ToList();
+                    foreach (URL urls in histo)
+                    {
+                        comboBox1.Items.Add(urls.url);
+                    }
                 }
                 else if (comboBox2.SelectedItem.ToString() == "Por visitas")
                 {
-                    histo = histo.OrderByDescending(x => x.contador ).ToList();
-                    ActualizarComboBox();
+                    histo = histo.OrderByDescending(a => a.contador).ToList();
+                    foreach (URL urls in histo)
+                    {
+                        comboBox1.Items.Add(urls.url);
+                    }
                 }
             }
         }
@@ -124,39 +128,49 @@ namespace ExploradorWeb
         {
             URL urls = new URL();
             string urlVisitada = comboBox1.Text.ToLower().Trim();
-           
+            int veces = 0;
             if (webView != null && webView.CoreWebView2 != null)
                 {
-                    URL Urlexistente = histo.Find(url => url.url == urlVisitada);
+                    
                     if (urlVisitada.Contains("https://") || (urlVisitada.Contains(".com") || urlVisitada.Contains(".org")))
                         {
-
-                        if (Urlexistente != null && histo.Any(url => url.url.ToLower() == urlVisitada))
+                        for(int i=0; i < histo.Count; i++)
                         {
-                            Urlexistente.contador++;
+                            
+                            if (histo[i].url == urlVisitada)
+                            {
+                                histo[i].contador++;
+                                veces++;
+                            }
                             
                         }
-                        else
+                        if(veces==0)
                         {
-                            urls.url = urlVisitada;
-                            urls.contador = 1;
-                            urls.fecha = DateTime.Now;
-                            histo.Add(urls);
+                        urls.url = urlVisitada;
+                        urls.contador = 1;
+                        urls.fecha = DateTime.Now;
+                        histo.Add(urls);
 
                         }
-          
+
+
                     }
                     else
                     {
 
                         urlVisitada = "https://www.google.com/search?q=" + urlVisitada;
 
-                        if (Urlexistente != null)
+                        for (int i = 0; i < histo.Count; i++)
                         {
-                            Urlexistente.contador++;
-                            
+
+                            if (histo[i].url == urlVisitada)
+                            {
+                                histo[i].contador++;
+                                veces++;
+                            }
+
                         }
-                        else
+                        if (veces == 0)
                         {
                             urls.url = urlVisitada;
                             urls.contador = 1;

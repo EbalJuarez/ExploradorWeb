@@ -1,12 +1,12 @@
 [
     {
         "url": "https://www.google.com/search?q=carro",
-        "contador": 1,
+        "contador": 2,
         "fecha": "2025-03-12T16:27:50.804931-06:00"
     },
     {
         "url": "https://www.google.com/search?q=perro",
-        "contador": 1,
+        "contador": 3,
         "fecha": "2025-03-12T16:27:55.1229991-06:00"
     },
     {
